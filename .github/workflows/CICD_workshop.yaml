@@ -88,6 +88,12 @@ jobs:
     - name: Install Cosign
       id: Install_Cosign
       uses: sigstore/cosign-installer@v3.1.1
-        
+
+    - name: Write signing key to disk
+      run: 'echo "$KEY" > cosign.key'
+      shell: bash
+      env:
+          KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+    
     - name: Sign the published Docker image
       run: cosign sign --key cosign.key ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
