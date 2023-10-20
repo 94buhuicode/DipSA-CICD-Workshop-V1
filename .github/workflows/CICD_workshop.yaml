@@ -85,14 +85,16 @@ jobs:
         tags: ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
   
   #cosign
+    - name: Install Cosign
+      id: Install_Cosign
+      uses: sigstore/cosign-installer@v3.1.1
+
     - name: Sign image with a key
-      id: Cosign_image
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+      id: Sign_image
       run: |
-          cosign sign --yes --key env://COSIGN_PRIVATE_KEY "${TAGS}@${DIGEST}"
+        cosign sign --key env://COSIGN_PRIVATE_KEY "${TAGS}"
       env:
-          TAGS: ${{ steps.docker_meta.outputs.tags }}
-          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
-          DIGEST: ${{ steps.build-and-push.outputs.digest }}
+        TAGS: ${{ steps.docker_meta.outputs.tags }}
+        COSIGN_PRIVATE_KEY: ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
+        
     
