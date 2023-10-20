@@ -98,3 +98,19 @@ jobs:
     
     - name: Sign the published Docker image
       run: cosign sign --key cosign.key ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
+    
+    - name: Slack Notification_success
+      id: Slack_Notification_success
+      uses: rtCamp/action-slack-notify@v2
+      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+      env:
+        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
+        SLACK_COLOR: ${{ job.status }}
+        SLACK_MESSAGE: 
+            'Name: Sen Tian Er \n
+            Metriculation: A0285900A \n
+            Email: e1221712@u.nus.edu \n
+            Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
+            Image: https://hub.docker.com/r/94buhuicode/ca-assignment'
+        SLACK_TITLE: Image build and signed
+        SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
