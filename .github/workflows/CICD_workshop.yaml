@@ -107,10 +107,10 @@ jobs:
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
         SLACK_COLOR: ${{ job.status }}
         SLACK_MESSAGE: 
-            'Name: Sen Tian Er \n
+            "Name: Sen Tian Er \n
             Metriculation: A0285900A \n
             Email: e1221712@u.nus.edu \n
             Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
-            Image: https://hub.docker.com/r/94buhuicode/ca-assignment'
-        SLACK_TITLE: Image build and signed
+            Image: https://hub.docker.com/r/94buhuicode/ca-assignment"
+        SLACK_TITLE: Image built and signed
         SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
