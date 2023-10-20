@@ -88,13 +88,6 @@ jobs:
     - name: Install Cosign
       id: Install_Cosign
       uses: sigstore/cosign-installer@v3.1.1
-
-    - name: Sign image with a key
-      id: Sign_image
-      run: |
-        cosign sign --key env://COSIGN_PRIVATE_KEY "${TAGS}"
-      env:
-        TAGS: ${{ steps.docker_meta.outputs.tags }}
-        COSIGN_PRIVATE_KEY: ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
         
-    
+    - name: Sign the published Docker image
+      run: cosign sign --key cosign.key ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
