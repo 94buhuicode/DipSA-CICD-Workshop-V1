@@ -114,3 +114,5 @@ jobs:
             Image: https://hub.docker.com/r/94buhuicode/ca-assignment"
         SLACK_TITLE: Image built and signed
         SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+
+    abc
