@@ -82,7 +82,7 @@ jobs:
       uses: docker/build-push-action@v4
       with:
         push: true
-        tags: fortunes/Dockerfile
+        
   
   #cosign
     - name: Sign image with a key
