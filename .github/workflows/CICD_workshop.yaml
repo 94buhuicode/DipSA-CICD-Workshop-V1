@@ -27,13 +27,13 @@ jobs:
         scan-type: 'fs'
         ignore-unfixed: true
         format: 'table'
-        output: 'trivy-results.binary'
+        output: 'trivy-results.txt'
         severity: 'HIGH, CRITICAL'
 
     - name: Check Trivy scan results
       id: check_trivy_results
       run: |
-          if [[ -s "trivy-results.binary" ]]; then
+          if [[ -s "trivy-results.txt" ]]; then
             echo "Vulnerabilities found."
             echo "::set-output name=vulnerabilities::true"
           else
@@ -60,7 +60,7 @@ jobs:
       if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
       with:
           token: ${{ secrets.SLACK_BOT_TOKEN }}
-          path: trivy-results.table
+          path: trivy-results.txt
           channel: ${{ secrets.SLACK_CHANNELID }}
 
     - name: Set up QEMU Docker
