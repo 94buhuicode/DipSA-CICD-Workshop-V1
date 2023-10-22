@@ -102,7 +102,17 @@ jobs:
         cosign generate-key-pair
       env:
             COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-
+    
+    - name: View
+      id: View
+      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+      run: ls
+    
+    - name: Show Key
+      run: cat cosign.key
+    
+    - name: Show Public Key
+      run: cat cosign.pub
     
     - name: Sign the published Docker image
       if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
