@@ -59,7 +59,7 @@ jobs:
         SLACK_MESSAGE: 
           "Failed trivy scan, see uploaded report"
         SLACK_TITLE: Scan failed
-        SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+        SLACK_WEBHOOK: ${{ secrets.SUBMISSION }}
 
     - name: Upload to slack
       id: Upload_to_slack
@@ -135,6 +135,6 @@ jobs:
             Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
             Image: https://hub.docker.com/repository/docker/94buhuicode/ca-assignment/general"
         SLACK_TITLE: Image built and signed
-        SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+        SLACK_WEBHOOK: ${{ secrets.SUBMISSION }}
 
     
