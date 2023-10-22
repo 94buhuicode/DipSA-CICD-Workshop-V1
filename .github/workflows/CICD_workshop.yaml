@@ -48,7 +48,7 @@ jobs:
       if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
       env:
         SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
-        SLACK_COLOR: ${{ job.status }}
+        SLACK_COLOR: #FF0000
         SLACK_MESSAGE: 
           "Failed trivy scan, see uploaded report"
         SLACK_TITLE: Scan failed
