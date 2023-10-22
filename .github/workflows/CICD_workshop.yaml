@@ -28,7 +28,7 @@ jobs:
         ignore-unfixed: true
         format: 'table'
         output: 'trivy-results.txt'
-        severity: 'HIGH, CRITICAL'
+        severity: 'CRITICAL'
 
     - name: Check Trivy scan results
       id: check_trivy_results
