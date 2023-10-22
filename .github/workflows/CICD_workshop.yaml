@@ -33,7 +33,7 @@ jobs:
     - name: Check Trivy scan results
       id: check_trivy_results
       run: |
-          if [[ -s "trivy-results.txt" ]]; then
+          if [[ -s "trivy-results.table" ]]; then
             echo "Vulnerabilities found."
             echo "::set-output name=vulnerabilities::true"
           else
