@@ -16,120 +16,133 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: check out repository
-      id: check_out_repository
-      uses: actions/checkout@v4
-
-
-    - name: Run Trivy vulnerability scanner in repo mode
-      uses: aquasecurity/trivy-action@master
-      with:
-        scan-type: 'fs'
-        ignore-unfixed: true
-        format: 'table'
-        output: 'trivy-results.txt'
-        severity: 'HIGH'
-
-    - name: Check Trivy scan results
-      id: check_trivy_results
+    - name: Check Commit Message
+      id: commit_message_check
       run: |
-          if [[ -s "trivy-results.txt" ]]; then
-            echo "Vulnerabilities found."
-            echo "::set-output name=vulnerabilities::true"
-          else
-            echo "No vulnerabilities found."
-            echo "::set-output name=vulnerabilities::false"
-          fi
-      continue-on-error: true
+        if [[ "${{ github.event.head_commit.message }}" == "#NORUN"* ]]; then
+        echo "Commit message starts with #NORUN, skipping workflow."
+        echo "::set-output name=skip_workflow::true"
+        fi
     
-    - name: Slack Notification
-      id: Slack_Notification
-      uses: rtCamp/action-slack-notify@v2
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
-      env:
-        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
-        SLACK_COLOR: '#FF0000'
-        SLACK_MESSAGE: 
-          "Failed trivy scan, see uploaded report"
-        SLACK_TITLE: Scan failed
-        SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+    - name: Your Actual Build Step
+      if: steps.commit_message_check.outputs.skip_workflow != 'true'
 
-    - name: Upload to slack
-      id: Upload_to_slack
-      uses: adrey/slack-file-upload-action@master
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
-      with:
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
-          path: trivy-results.txt
-          channel: ${{ secrets.SLACK_CHANNELID }}
+      steps:
+        - name: check out repository
+          id: check_out_repository
+          uses: actions/checkout@v4
 
-    - name: Set up QEMU Docker
-      id: Set_up_QEMU_Docker
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: docker/setup-qemu-action@v3
 
-    - name: Set up Docker Buildx
-      id: Set_up_Docker_Buildx
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: docker/setup-buildx-action@v3
-    
-    - name: Login to Docker Hub
-      id: Login_to_Docker
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKER_USERNAME }}
-        password: ${{ secrets.DOCKER_TOKEN }}
+        - name: Run Trivy vulnerability scanner
+          id: Run_Trivy_vulnerability_scanner
+          uses: aquasecurity/trivy-action@master
+          with:
+            scan-type: 'fs'
+            ignore-unfixed: true
+            format: 'table'
+            output: 'trivy-results.txt'
+            severity: 'CRITICAL'
 
-    - name: Build and push docker image
-      id: Build_and_push_docker
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: docker/build-push-action@v4
-      with:
-        push: true
-        tags: ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
-  
-  #cosign
-    - name: Install Cosign
-      id: Install_Cosign
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: sigstore/cosign-installer@v3.1.1
+        - name: Check Trivy scan results
+          id: check_trivy_results
+          run: |
+            if [[ -s "trivy-results.txt" ]]; then
+                echo "Vulnerabilities found."
+                echo "::set-output name=vulnerabilities::true"
+            else
+                echo "No vulnerabilities found."
+                echo "::set-output name=vulnerabilities::false"
+            fi
+          continue-on-error: true
+        
+        - name: Slack Notification
+          id: Slack_Notification
+          uses: rtCamp/action-slack-notify@v2
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
+          env:
+            SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
+            SLACK_COLOR: '#FF0000'
+            SLACK_MESSAGE: 
+            "Failed trivy scan, see uploaded report"
+            SLACK_TITLE: Scan failed
+            SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
 
-    - name: Generate Cosign Key Pair
-      id: Generate_Cosign_Key_Pair
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      run: |
-        cosign generate-key-pair
-      env:
-            COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
-    
-    - name: View
-      id: View
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      run: ls
-    
-    - name: Show Public Key
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      run: cat cosign.pub
-    
-    - name: Sign the published Docker image
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      run: cosign sign --key cosign.key ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
-    
-    - name: Slack Notification_success
-      id: Slack_Notification_success
-      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
-      uses: rtCamp/action-slack-notify@v2
-      env:
-        SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
-        SLACK_COLOR: ${{ job.status }}
-        SLACK_MESSAGE: 
-            "Name: Sen Tian Er \n
-            Metriculation: A0285900A \n
-            Email: e1221712@u.nus.edu \n
-            Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
-            Image: https://hub.docker.com/repository/docker/94buhuicode/ca-assignment/general"
-        SLACK_TITLE: Image built and signed
-        SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+        - name: Upload to slack
+          id: Upload_to_slack
+          uses: adrey/slack-file-upload-action@master
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'true'
+          with:
+            token: ${{ secrets.SLACK_BOT_TOKEN }}
+            path: trivy-results.txt
+            channel: ${{ secrets.SLACK_CHANNELID }}
 
+        - name: Set up QEMU Docker
+          id: Set_up_QEMU_Docker
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: docker/setup-qemu-action@v3
+
+        - name: Set up Docker Buildx
+          id: Set_up_Docker_Buildx
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: docker/setup-buildx-action@v3
+        
+        - name: Login to Docker Hub
+          id: Login_to_Docker
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_TOKEN }}
+
+        - name: Build and push docker image
+          id: Build_and_push_docker
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: docker/build-push-action@v4
+          with:
+            push: true
+            tags: ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
     
+    #cosign
+        - name: Install Cosign
+          id: Install_Cosign
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: sigstore/cosign-installer@v3.1.1
+
+        - name: Generate Cosign Key Pair
+          id: Generate_Cosign_Key_Pair
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          run: |
+            cosign generate-key-pair
+          env:
+                COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE_KEY }}
+        
+        - name: View
+          id: View
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          run: ls
+        
+        - name: Show Public Key
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          run: cat cosign.pub
+        
+        - name: Sign the published Docker image
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          run: cosign sign --key cosign.key ${{secrets.DOCKER_USERNAME}}/ca-assignment:${{github.sha}}
+        
+        - name: Slack Notification_success
+          id: Slack_Notification_success
+          if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
+          uses: rtCamp/action-slack-notify@v2
+          env:
+            SLACK_CHANNEL: ${{ secrets.SLACK_CHANNELID }}
+            SLACK_COLOR: ${{ job.status }}
+            SLACK_MESSAGE: 
+                "Name: Sen Tian Er \n
+                Metriculation: A0285900A \n
+                Email: e1221712@u.nus.edu \n
+                Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
+                Image: https://hub.docker.com/repository/docker/94buhuicode/ca-assignment/general"
+            SLACK_TITLE: Image built and signed
+            SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
+
+        
