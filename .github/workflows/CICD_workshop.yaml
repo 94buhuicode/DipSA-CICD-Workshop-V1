@@ -120,7 +120,7 @@ jobs:
             Metriculation: A0285900A \n
             Email: e1221712@u.nus.edu \n
             Git: https://github.com/94buhuicode/DipSA-CICD-Workshop-V1 \n
-            Image: https://hub.docker.com/r/94buhuicode/ca-assignment"
+            Image: https://hub.docker.com/repository/docker/94buhuicode/ca-assignment/general"
         SLACK_TITLE: Image built and signed
         SLACK_WEBHOOK: ${{ secrets.TEST_SUBMISSION }}
 
