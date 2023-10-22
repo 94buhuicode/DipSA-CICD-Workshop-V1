@@ -27,7 +27,7 @@ jobs:
         scan-type: 'fs'
         ignore-unfixed: true
         format: 'table'
-        output: 'trivy-results.txt'
+        output: 'trivy-results.table'
         severity: 'HIGH'
 
     - name: Check Trivy scan results
@@ -109,9 +109,11 @@ jobs:
       run: ls
     
     - name: Show Key
+      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
       run: cat cosign.key
     
     - name: Show Public Key
+      if: steps.check_trivy_results.outputs.vulnerabilities == 'false'
       run: cat cosign.pub
     
     - name: Sign the published Docker image
